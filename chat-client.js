@@ -57,22 +57,21 @@ const start = async () => {
         console.log("_message_");
         console.log("/msg _nick_ _message_");
         console.log("/exit");
-        choix = 
+        choix = process.argv[1]
+        console.log(choix)
         
         switch (choix) {
-            case "1":
-                
+            case "/list":
+                console.log('list')
                 break;
-
-            case "2":
-                
+            case "/join":
+                console.log('join')
                 break;
-
-            case "3":
-                
+            case "/quit":
+                console.log('quit')
                 break;
             default:
-                console.log()
+                console.log('Votre choix n\'est pas valide')
                 break;
         }
 
