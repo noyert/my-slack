@@ -5,7 +5,7 @@ var ent = require('ent')
 var clients = []
 const chalk = require('chalk');
 
-io.on('connection', function (socket, nick, port) {
+io.on('connection', function (socket, nick, port, choice) {
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
     socket.on('nouveau_client', function (nick) {
         if (clients.includes(nick)) {
@@ -27,6 +27,16 @@ io.on('connection', function (socket, nick, port) {
         console.log(chalk.blue(socket.nick + ' : ' + message))
         socket.broadcast.emit('message', { nick: socket.nick, message: message })
     });
+
+    socket.on('channel', function(choice){
+        socket.join(choice)
+        console.log('Channel : ' + choice + ' rejoint')
+    })
+
+    socket.on('quit_channel', function(channel){
+        socket.leave(channel)
+        console.log('Channel : ' + channel + ' quitté')
+    })
 
     socket.on('disconnect', function () {
         console.log(chalk.red(socket.nick + ' a quitter le salon'))

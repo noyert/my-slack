@@ -1,30 +1,12 @@
-var socket = require('socket.io-client')('http://192.168.1.250:3000');
+var socket = require('socket.io-client')('http://192.168.1.11:3000');
 const repl = require('repl')
 const chalk = require('chalk');
 var inquirer = require('inquirer');
-// var figlet = require('figlet');
 var tabSalon = ['Général', 'Workplace', 'Tech', 'News']
-var choiceIsValid = false
-
-// const titleFiglet = () => {
-//     figlet.text('Tchat!', {
-//         font: 'doom',
-//         horizontalLayout: 'default',
-//         verticalLayout: 'default'
-//     }, function (err, data) {
-//         if (err) {
-//             console.log('Something went wrong...');
-//             console.dir(err);
-//             return;
-//         }
-//         console.log(data);
-//     });
-// }
 
 const start = async () => {
 
     console.log('\nBonjour, bienvenue sur le tchat MellonMellon\n');
-    // titleFiglet()
 
     var { nick } = await inquirer.prompt([
         {
@@ -76,10 +58,32 @@ const start = async () => {
         }
     }
 
+    function joinChannel(choice){
+        var salonIsValid = false
+        for(var i=0; i<tabSalon.length; i++){
+            if(tabSalon[i].includes(choice)){
+                socket.emit('channel', choice)
+                salonIsValid= true
+                console.log("Channel valide")
+            } 
+        }
+        if(!salonIsValid){
+            console.log("Ce channel n'est pas valide")
+        }
+    }
+
+    function quitChannel(channel){
+        socket.on('channel', choice)
+        socket.emit('quit_channel', channel)
+        // if(channel == choice){
+            
+        // }
+    }
+
     let command = ''
 
     do {
-        console.log("Pour de l'aide: /help")
+        console.log("Liste des choix: /help")
         var { choice } = await inquirer.prompt([
             {
                 type: 'input',
@@ -110,11 +114,11 @@ const start = async () => {
                 break;
             case "/join":
                 choiceIsValid = true
-                console.log('join channel')
+                joinChannel(choiceSplit[1])
                 break;
             case "/quit":
                 choiceIsValid = true
-                console.log('quit channel')
+                quitChannel(choiceSplit[1])
                 break;
             case "/users":
                 choiceIsValid = true
