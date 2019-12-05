@@ -1,36 +1,15 @@
-var socket = require('socket.io-client')('http://localhost:3000');
+var socket = require('socket.io-client')('http://192.168.1.11:3000');
 const repl = require('repl')
 const chalk = require('chalk');
 var inquirer = require('inquirer');
 var tabSalon = ['Général', 'Workplace', 'Tech', 'News']
-var choix = "";
+var choiceIsValid = false
 
 const start = async () => {
 
     console.log('\nBonjour, bienvenue sur le tchat MellonMellon\n');
 
-    // const { port } = await inquirer.prompt([
-    //     {
-    //         type: 'input',
-    //         name: 'port',
-    //         message: '/server _host_[:port]',
-    //         validate: function (value) {
-    //             var valid = false
-    //             var resSplit = value.split(' ')
-    //             if (value == `/server ${resSplit[1]}`) {
-    //                 valid = true
-    //             }
-    //             return valid || 'Please retry';
-    //         },
-    //     }
-    // ])
-
-    // var socket = require('socket.io-client')(port.split(' ')[1]);
-    // socket.emit('nouveau_port', port.split(':')[2]);
-    // console.log(port.split(' ')[1])
-    // console.log(port)
-
-    const { nick } = await inquirer.prompt([
+    var { nick } = await inquirer.prompt([
         {
             type: 'input',
             name: 'nick',
@@ -46,36 +25,60 @@ const start = async () => {
         }
     ])
 
+    nick = nick.split(' ')[1]
     console.log('Votre pseudo: ' + nick)
 
-    do {
-        console.log("Choisissez une option");
-        console.log("/list [string]");
-        console.log("/join _channel_");
-        console.log("/quit _channel_");
-        console.log("/users");
-        console.log("_message_");
-        console.log("/msg _nick_ _message_");
-        console.log("/exit");
-        choix = process.argv[1]
-        console.log(choix)
-        
-        switch (choix) {
+    console.log("Choisissez une option:");
+    console.log("/list [string]");
+    console.log("/join _channel_");
+    console.log("/quit _channel_")
+    console.log("/users");
+    // console.log("_message_")
+    console.log("/msg _nick_ _message_")
+    console.log("/exit");
+
+    while (!choiceIsValid) {
+        var { choice } = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'choice',
+                message: 'Votre choix:'
+            }
+        ])
+
+        var choiceSplit = choice.split(' ')
+        console.log(choiceSplit)
+
+        switch (choiceSplit[0]) {
             case "/list":
+                choiceIsValid = true
                 console.log('list')
                 break;
             case "/join":
-                console.log('join')
+                choiceIsValid = true
+                console.log('join channel')
                 break;
             case "/quit":
-                console.log('quit')
+                choiceIsValid = true
+                console.log('quit channel')
+                break;
+            case "/users":
+                choiceIsValid = true
+                console.log('users')
+                break;
+            case "/msg":
+                choiceIsValid = true
+                console.log('MP')
+                break;
+            case "/exit":
+                choiceIsValid = true
+                console.log("Vous quittez le tchat MellonMellon")
                 break;
             default:
                 console.log('Votre choix n\'est pas valide')
                 break;
         }
-
-    } while (choix !== '/exit');
+    }
 
     socket.emit('nouveau_client', nick);
 
@@ -83,9 +86,9 @@ const start = async () => {
         socket.emit('disconnect')
     });
 
-    socket.on('connect', () => {
-        console.log(chalk.green('=== start chatting ==='))
-    })
+    // socket.on('connect', () => {
+    //     console.log(chalk.green('=== start chatting ==='))
+    // })
 
     socket.on('nouveau_client', (nick) => {
         console.log(nick + ' a rejoint le salon')
@@ -105,18 +108,6 @@ const start = async () => {
             socket.send(cmd, nick)
         }
     })
-
-    // const { salon } = await inquirer.prompt([
-    //     {
-    //         type: 'list',
-    //         name: 'salon',
-    //         message: 'Choisissez un salon',
-    //         choices: tabSalon,
-    //         filter: function (val) {
-    //             return val.toLowerCase();
-    //         }
-    //     }
-    // ])
 }
 
 start()

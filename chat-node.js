@@ -6,11 +6,6 @@ var clients = []
 const chalk = require('chalk');
 
 io.on('connection', function (socket, nick, port) {
-    // socket.on('nouveau_port', function(port){
-    //     socket.port = port
-    //     // console.log('la?')
-    //     // http.listen(port, () => console.log(`server listening on port: ${port}`))
-    // })
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
     socket.on('nouveau_client', function (nick) {
         socket.nick = nick
