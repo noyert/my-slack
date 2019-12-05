@@ -75,8 +75,9 @@ const start = async () => {
         console.log(chalk.blue(nick + ': ' + message))
     }
 
-    socket.on('disconnect', function () {
+    socket.on('user_quit', function (nick) {
         socket.emit('disconnect')
+        console.log(chalk.red(nick + ' a quitté le salon'))
     });
 
     repl.start({

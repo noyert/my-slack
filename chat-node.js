@@ -29,7 +29,7 @@ io.on('connection', function (socket, nick, port) {
 
     socket.on('disconnect', function () {
         console.log(chalk.red(socket.nick + ' a quitté le salon'))
-        socket.broadcast.emit('message', { nick: socket.nick, message: ' a quitté le salon' })
+        socket.broadcast.emit('user_quit', socket.nick)
         clients.splice(clients.indexOf(socket.nick), 1);
         console.log(clients)
     })
