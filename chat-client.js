@@ -2,6 +2,7 @@ var socket = require('socket.io-client')('http://192.168.1.250:3000')
 const repl = require('repl')
 const chalk = require('chalk')
 var inquirer = require('inquirer')
+var channels = ['Général', 'Workplace', 'Tech', 'News']
 
 const start = async () => {
 
@@ -36,9 +37,31 @@ const start = async () => {
         }
     })
 
-    socket.on('disconnect', function () {
-        socket.emit('disconnect')
-    });
+    var { list } = await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'list',
+            message: '/list [string]',
+            validate: function (value) {
+                var valid = false
+                var resSplit = value.split(' ')
+                if (value == `/list`) {
+                    console.log(chalk.blue('\n' + channels))
+                    valid = true
+                }
+                if (value == `/list ${resSplit[1]}`) {
+                    for(var i = 0; i < channels.length; i++){
+                        if(channels[i].includes(resSplit[1])){
+                            console.log(chalk.blue('\n' + channels[i]))
+                        }
+                    }
+                    valid = true
+                }
+                return valid || "Veuillez réessayer"
+            }
+        }
+    ])
+    socket.emit('list', list)
 
     socket.on('connect', () => {
         console.log(chalk.green('=== start chatting ==='))
@@ -51,6 +74,10 @@ const start = async () => {
     function insereMessage(nick, message) {
         console.log(chalk.blue(nick + ': ' + message))
     }
+
+    socket.on('disconnect', function () {
+        socket.emit('disconnect')
+    });
 
     repl.start({
         prompt: '',
