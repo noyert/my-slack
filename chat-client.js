@@ -2,12 +2,29 @@ var socket = require('socket.io-client')('http://192.168.1.11:3000');
 const repl = require('repl')
 const chalk = require('chalk');
 var inquirer = require('inquirer');
+var figlet = require('figlet');
 var tabSalon = ['Général', 'Workplace', 'Tech', 'News']
 var choiceIsValid = false
+
+const titleFiglet = () => {
+    figlet.text('Tchat!', {
+        font: 'doom',
+        horizontalLayout: 'default',
+        verticalLayout: 'default'
+    }, function(err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data);
+    });
+}
 
 const start = async () => {
 
     console.log('\nBonjour, bienvenue sur le tchat MellonMellon\n');
+    // titleFiglet()
 
     var { nick } = await inquirer.prompt([
         {
@@ -47,12 +64,11 @@ const start = async () => {
         ])
 
         var choiceSplit = choice.split(' ')
-        console.log(choiceSplit)
+        // console.log(choiceSplit)
 
         switch (choiceSplit[0]) {
             case "/list":
                 choiceIsValid = true
-                console.log('list')
                 break;
             case "/join":
                 choiceIsValid = true
@@ -64,7 +80,11 @@ const start = async () => {
                 break;
             case "/users":
                 choiceIsValid = true
-                console.log('users')
+                socket.on('list_client', (clients) => {
+                    console.log('Liste des utilisateurs:')
+                    clients.map((c) => console.log('- ' + c))
+                    // console.log(clients)
+                })
                 break;
             case "/msg":
                 choiceIsValid = true

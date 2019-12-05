@@ -9,13 +9,14 @@ io.on('connection', function (socket, nick, port) {
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
     socket.on('nouveau_client', function (nick) {
         socket.nick = nick
-        console.log(chalk.green('user connected: ' + nick))
+        console.log(chalk.green('Utilisateur connecté: ' + nick))
         if(clients.includes(nick)){
             console.log('Le pseudo ' + nick + ' est déjà utilisé')
         } else {
             clients.push(nick)
             console.log(clients)
             socket.broadcast.emit('nouveau_client', nick)
+            socket.emit('list_client', clients)
         }
     });
 
