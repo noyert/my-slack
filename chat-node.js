@@ -4,10 +4,9 @@ const port = 3000
 var ent = require('ent')
 var clients = []
 const chalk = require('chalk');
-var usersGeneral = []
-var usersWorkplace = []
-var usersTech = []
-var usersNews = []
+var clear = require('clear');
+
+clear();
 
 io.on('connection', function (socket, nick, port, choice) {
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
@@ -34,64 +33,27 @@ io.on('connection', function (socket, nick, port, choice) {
 
     socket.on('join_channel', function (choice, nick) {
         socket.join(choice)
-        switch (choice) {
-            case "général":
-                usersGeneral.push(nick)
-                break
-            case "workplace":
-                usersWorkplace.push(nick)
-                break
-            case "tech":
-                usersTech.push(nick)
-                break
-            case "news":
-                usersNews.push(nick)
-                break
-        }
         console.log(chalk.green(nick + ' a rejoint le channel ' + choice))
     })
 
     socket.on('channel_users', function (channel) {
         var clientsList = io.sockets.adapter.rooms[channel];
         var numClients = clientsList.length;
+        var roster = io.sockets.clients(channel)
+        roster.forEach(function(client){
+            console.log('Username: ' + client.nick)
+        })
         console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + channel))
-        switch (channel) {
-            case "général":
-                usersGeneral.map((u) => console.log(chalk.blue('- ' + u)))
-                break
-            case "workplace":
-                usersWorkplace.map((u) => console.log(chalk.blue('- ' + u)))
-                break
-            case "tech":
-                usersTech.map((u) => console.log(chalk.blue('- ' + u)))
-                break
-            case "news":
-                usersNews.map((u) => console.log(chalk.blue('- ' + u)))
-                break
-        }
+        socket.emit('nb_clients', numClients)
     })
 
     socket.on('quit_channel', function (channel, nick) {
         socket.leave(channel)
-        switch (channel) {
-            case "général":
-                usersGeneral.splice(usersGeneral.indexOf(nick), 1);
-                break
-            case "workplace":
-                usersWorkplace.splice(usersWorkplace.indexOf(nick), 1);
-                break
-            case "tech":
-                usersTech.splice(usersTech.indexOf(nick), 1);
-                break
-            case "news":
-                usersNews.splice(usersNews.indexOf(nick), 1);
-                break
-        }
         console.log(chalk.red(nick + ' a quitté le channel ' + channel))
     })
 
-    socket.on('disconnect', function () {
-        console.log(chalk.red(socket.nick + ' a quitter le tchat'))
+    socket.on('disconnect', function (nick) {
+        console.log(chalk.red(socket.nick + ' a quitter le serveur'))
         socket.broadcast.emit('user_quit', socket.nick)
         clients.splice(clients.indexOf(socket.nick), 1);
         console.log(clients)

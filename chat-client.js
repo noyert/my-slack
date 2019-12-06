@@ -4,10 +4,13 @@ const chalk = require('chalk');
 var inquirer = require('inquirer');
 var tabSalon = ['général', 'workplace', 'tech', 'news']
 var choiceChannel = ''
+var clear = require('clear');
+var isOkay = false
 
 const start = async () => {
 
-    console.log('\nBonjour, bienvenue sur le tchat MellonMellon\n');
+    clear();
+    console.log('Bonjour, bienvenue sur le tchat MellonMellon\n');
 
     var { nick } = await inquirer.prompt([
         {
@@ -25,7 +28,7 @@ const start = async () => {
         }
     ])
 
-    console.log('Votre pseudo: ' + nick)
+    console.log('\nVotre pseudo: ' + nick)
 
     socket.emit('nouveau_client', nick);
 
@@ -34,9 +37,15 @@ const start = async () => {
             console.log("pseudo déjà existant")
             return start()
         } else {
-            console.log(chalk.green(nick + ' a rejoint le tchat'))
+            console.log('\n')
+            console.log(chalk.green(nick + ' a rejoint le serveur'))
         }
     })
+
+    socket.emit('disconnect', nick)
+    socket.on('user_quit', function (nick) {
+        console.log(chalk.red(`${nick} a quitté le serveur`))
+    });
 
     function channelList(choiceSplit) {
         var str = choiceSplit[1]
@@ -55,13 +64,21 @@ const start = async () => {
         choice = choice.toLowerCase()
         var salonIsValid = false
         if(choiceChannel == ''){
-            for(var i=0; i<tabSalon.length; i++){
-                if(tabSalon[i] == choice){
-                    socket.emit('join_channel', choice, nick)
-                    salonIsValid= true
-                    choiceChannel = choice
-                    console.log(chalk.green("Vous avez rejoint le channel " + choice))
-                } 
+            if(tabSalon.includes(choice)){
+                for(var i=0; i<tabSalon.length; i++){
+                    if(tabSalon[i] == choice){
+                        socket.emit('join_channel', choice, nick)
+                        salonIsValid= true
+                        choiceChannel = choice
+                        console.log(chalk.green("Vous avez rejoint le channel " + choice))
+                    }
+                }
+            } else {
+                salonIsValid= true
+                tabSalon.push(choice)
+                socket.emit('join_channel', choice, nick)
+                choiceChannel = choice
+                console.log(chalk.green("Vous avez créé et rejoint le channel " + choice))
             }
             if(!salonIsValid){
                 console.log(chalk.red("Ce channel n'est pas valide"))
@@ -72,9 +89,12 @@ const start = async () => {
     }
 
     function usersChannel() {
+        console.log(choiceChannel)
         if(choiceChannel !== ''){
-            console.log('la?')
             socket.emit('channel_users', choiceChannel)
+            socket.on('nb_clients', (numClients) => {
+                console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + choiceChannel))
+            })
         } else {
             console.log(chalk.red("Vous n'êtes pas dans un channel"))
         }
@@ -142,11 +162,6 @@ const start = async () => {
                 break;
         }
     } while (command !== '/exit')
-
-    socket.on('user_quit', function (nick) {
-        socket.emit('disconnect')
-        console.log(chalk.red(nick + ' a quitté le tchat'))
-    });
 
     // socket.on('connect', () => {
     //     console.log(chalk.green('=== start chatting ==='))
