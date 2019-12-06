@@ -34,18 +34,9 @@ const start = async () => {
             console.log("pseudo déjà existant")
             return start()
         } else {
-            console.log(chalk.green(nick + ' a rejoint le salon'))
+            console.log(chalk.green(nick + ' a rejoint le tchat'))
         }
     })
-
-    function usersChannel() {
-        if(choiceChannel !== ''){
-            console.log('la?')
-            socket.emit('channel_users', choiceChannel)
-        } else {
-            console.log(chalk.red("Vous n'êtes pas dans un channel"))
-        }
-    }
 
     function channelList(choiceSplit) {
         var str = choiceSplit[1]
@@ -77,6 +68,15 @@ const start = async () => {
             }
         } else {
             console.log(chalk.red('Vous êtes déjà dans le channel ' + choiceChannel))
+        }
+    }
+
+    function usersChannel() {
+        if(choiceChannel !== ''){
+            console.log('la?')
+            socket.emit('channel_users', choiceChannel)
+        } else {
+            console.log(chalk.red("Vous n'êtes pas dans un channel"))
         }
     }
 
@@ -145,7 +145,7 @@ const start = async () => {
 
     socket.on('user_quit', function (nick) {
         socket.emit('disconnect')
-        console.log(chalk.red(nick + ' a quitté le salon'))
+        console.log(chalk.red(nick + ' a quitté le tchat'))
     });
 
     // socket.on('connect', () => {
