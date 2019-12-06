@@ -1,4 +1,4 @@
-var socket = require('socket.io-client')('http://192.168.1.11:3000');
+var socket = require('socket.io-client')('http://localhost:3000');
 const repl = require('repl')
 const chalk = require('chalk');
 var inquirer = require('inquirer');
@@ -42,10 +42,58 @@ const start = async () => {
         }
     })
 
+    socket.on('privateMsg', (data) => {
+        console.log('\n')
+        console.log(chalk.yellow(data.nick + ': ' + data.private))
+    })
+
     socket.emit('disconnect', nick)
     socket.on('user_quit', function (nick) {
         console.log(chalk.red(`${nick} a quitté le serveur`))
     });
+
+    function privateMsg(choiceSplit) {
+
+        var rep = ''
+        for(var i=2; i<choiceSplit.length; i++){
+            rep += choiceSplit[i] + ' '
+        }
+
+        if (
+            choiceSplit[1] !== undefined
+            && choiceSplit[1] !== null
+            && choiceSplit[2] !== undefined
+            && choiceSplit[2] !== ' '
+            && choiceSplit[2] !== ''
+            && choiceSplit[2] !== null
+        ) {
+            socket.emit('private', { to: choiceSplit[1], private: rep })
+        }
+        else if (
+            choiceSplit[1] === undefined 
+            || choiceSplit[1] === null
+            || choiceSplit[1] === ''
+            || choiceSplit[1] === ' '
+        ) {
+            console.log(chalk.red("Veuillez entrer un pseudo"))
+        }
+        else if (
+            choiceSplit[2] === undefined
+            || choiceSplit[2] == ''
+            || choiceSplit[2] == ' '
+            || choiceSplit[2] === null
+        ) {
+            console.log(chalk.red("Entrer du texte dans votre message"))
+        }
+    }
+
+    socket.on('message', (data) => {
+        insereMessage(data.nick, data.message)
+    })
+
+    function insereMessage(nick, message) {
+        console.log(chalk.blue(nick + ': ' + message))
+    }
 
     function channelList(choiceSplit) {
         var str = choiceSplit[1]
@@ -152,7 +200,7 @@ const start = async () => {
                 usersChannel()
                 break;
             case "/msg":
-                console.log('MP')
+                privateMsg(choiceSplit)
                 break;
             case "/exit":
                 console.log("Vous quittez le tchat MellonMellon")
@@ -166,14 +214,6 @@ const start = async () => {
     // socket.on('connect', () => {
     //     console.log(chalk.green('=== start chatting ==='))
     // })
-
-    socket.on('message', (data) => {
-        insereMessage(data.nick, data.message)
-    })
-
-    function insereMessage(nick, message) {
-        console.log(chalk.blue(nick + ': ' + message))
-    }
 
     repl.start({
         prompt: '',

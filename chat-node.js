@@ -5,6 +5,7 @@ var ent = require('ent')
 var clients = []
 const chalk = require('chalk');
 var clear = require('clear');
+var connectedUsers = {}
 
 clear();
 
@@ -22,6 +23,7 @@ io.on('connection', function (socket, nick, port, choice) {
             console.log(clients)
             socket.broadcast.emit('nouveau_client', nick)
             // socket.emit('list_client', clients)
+            connectedUsers[nick] = socket
         }
     });
 
@@ -30,6 +32,30 @@ io.on('connection', function (socket, nick, port, choice) {
         console.log(chalk.blue(socket.nick + ' : ' + message))
         socket.broadcast.emit('message', { nick: socket.nick, message: message })
     });
+
+    socket.on('private',function(data){
+
+        if(clients.includes(data.to)){
+
+            const to = data.to
+            console.log(to)
+
+            const private = data.private
+            console.log(private)
+
+            if(connectedUsers.hasOwnProperty(to)) {
+                console.log(chalk.blue(socket.nick + ': ' + private))
+                connectedUsers[to].emit('privateMsg',{
+                    nick : socket.nick,
+                    private : private
+                })
+            }
+        }
+        else {
+            console.log(chalk.red("Le pseudo entré n'existe pas"))
+        }
+    
+    }); 
 
     socket.on('join_channel', function (choice, nick) {
         socket.join(choice)
