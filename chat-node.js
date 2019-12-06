@@ -18,7 +18,7 @@ io.on('connection', function (socket, nick, port, choice) {
             clients.push(nick)
             console.log(clients)
             socket.broadcast.emit('nouveau_client', nick)
-            socket.emit('list_client', clients)
+            // socket.emit('list_client', clients)
         }
     });
 
@@ -28,14 +28,20 @@ io.on('connection', function (socket, nick, port, choice) {
         socket.broadcast.emit('message', { nick: socket.nick, message: message })
     });
 
-    socket.on('channel', function(choice){
+    socket.on('join_channel', function (choice, nick) {
         socket.join(choice)
-        console.log('Channel : ' + choice + ' rejoint')
+        console.log(chalk.green(nick + ' a rejoint le channel ' + choice))
     })
 
-    socket.on('quit_channel', function(channel){
+    socket.on('channel_users', function (channel) {
+        var clientsList = io.sockets.adapter.rooms[channel];
+        var numClients = clientsList.length;
+        console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur ce channel'))
+    })
+
+    socket.on('quit_channel', function (channel, nick) {
         socket.leave(channel)
-        console.log('Channel : ' + channel + ' quitté')
+        console.log(chalk.red(nick + ' a quitté le channel ' + channel))
     })
 
     socket.on('disconnect', function () {

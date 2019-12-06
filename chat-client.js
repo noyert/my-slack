@@ -2,7 +2,8 @@ var socket = require('socket.io-client')('http://192.168.1.11:3000');
 const repl = require('repl')
 const chalk = require('chalk');
 var inquirer = require('inquirer');
-var tabSalon = ['Général', 'Workplace', 'Tech', 'News']
+var tabSalon = ['général', 'workplace', 'tech', 'news']
+var choiceChannel = ''
 
 const start = async () => {
 
@@ -37,12 +38,13 @@ const start = async () => {
         }
     })
 
-    function usersList() {
-        socket.on('list_client', (clients) => {
-            console.log('Liste des utilisateurs:')
-            clients.map((c) => console.log('- ' + c))
-            // console.log(clients)
-        })
+    function usersChannel() {
+        if(choiceChannel !== ''){
+            console.log('la?')
+            socket.emit('channel_users', choiceChannel)
+        } else {
+            console.log(chalk.red("Vous n'êtes pas dans un channel"))
+        }
     }
 
     function channelList(choiceSplit) {
@@ -59,25 +61,34 @@ const start = async () => {
     }
 
     function joinChannel(choice){
+        choice = choice.toLowerCase()
         var salonIsValid = false
-        for(var i=0; i<tabSalon.length; i++){
-            if(tabSalon[i].includes(choice)){
-                socket.emit('channel', choice)
-                salonIsValid= true
-                console.log("Channel valide")
-            } 
-        }
-        if(!salonIsValid){
-            console.log("Ce channel n'est pas valide")
+        if(choiceChannel == ''){
+            for(var i=0; i<tabSalon.length; i++){
+                if(tabSalon[i] == choice){
+                    socket.emit('join_channel', choice, nick)
+                    salonIsValid= true
+                    choiceChannel = choice
+                    console.log(chalk.green("Vous avez rejoint le channel " + choice))
+                } 
+            }
+            if(!salonIsValid){
+                console.log(chalk.red("Ce channel n'est pas valide"))
+            }
+        } else {
+            console.log(chalk.red('Vous êtes déjà dans le channel ' + choiceChannel))
         }
     }
 
     function quitChannel(channel){
-        socket.on('channel', choice)
-        socket.emit('quit_channel', channel)
-        // if(channel == choice){
-            
-        // }
+        channel = channel.toLowerCase()
+        if(channel == choiceChannel){
+            socket.emit('quit_channel', channel, nick)
+            console.log(chalk.red("Vous avez quitté le channel " + channel))
+            choiceChannel = ''
+        } else {
+            console.log(chalk.red("Vous n'êtes pas dans ce channel"))
+        }
     }
 
     let command = ''
@@ -104,32 +115,26 @@ const start = async () => {
                 console.log("/join _channel_");
                 console.log("/quit _channel_")
                 console.log("/users");
-                // console.log("_message_")
+                console.log("_message_")
                 console.log("/msg _nick_ _message_")
                 console.log("/exit");
                 break;
             case "/list":
-                choiceIsValid = true
                 channelList(choiceSplit)
                 break;
             case "/join":
-                choiceIsValid = true
                 joinChannel(choiceSplit[1])
                 break;
             case "/quit":
-                choiceIsValid = true
                 quitChannel(choiceSplit[1])
                 break;
             case "/users":
-                choiceIsValid = true
-                usersList()
+                usersChannel()
                 break;
             case "/msg":
-                choiceIsValid = true
                 console.log('MP')
                 break;
             case "/exit":
-                choiceIsValid = true
                 console.log("Vous quittez le tchat MellonMellon")
                 break;
             default:
