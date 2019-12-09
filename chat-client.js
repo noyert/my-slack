@@ -1,16 +1,16 @@
-var socket = require('socket.io-client')('http://localhost:3000');
+var socket = require('socket.io-client')('http://localhost:3000')
 const repl = require('repl')
-const chalk = require('chalk');
-var inquirer = require('inquirer');
+const chalk = require('chalk')
+var inquirer = require('inquirer')
 var tabSalon = ['général', 'workplace', 'tech', 'news']
 var choiceChannel = ''
-var clear = require('clear');
+var clear = require('clear')
 var isOkay = false
 
 const start = async () => {
 
-    clear();
-    console.log('Bonjour, bienvenue sur le tchat MellonMellon\n');
+    clear()
+    console.log('Bonjour, bienvenue sur le tchat MellonMellon\n')
 
     var { nick } = await inquirer.prompt([
         {
@@ -30,7 +30,7 @@ const start = async () => {
 
     console.log('\nVotre pseudo: ' + nick)
 
-    socket.emit('nouveau_client', nick);
+    socket.emit('nouveau_client', nick)
 
     socket.on('nouveau_client', (nick) => {
         if (nick == null) {
@@ -50,7 +50,42 @@ const start = async () => {
     socket.emit('disconnect', nick)
     socket.on('user_quit', function (nick) {
         console.log(chalk.red(`${nick} a quitté le serveur`))
-    });
+    })
+
+    function channelMessage(choiceSplit) {
+
+        var rep = ''
+        for (var i = 0; i < choiceSplit.length; i++) {
+            rep += choiceSplit[i] + ' '
+        }
+
+        if (
+            rep === ''
+            || rep === ' '
+            || rep === null
+            || rep === undefined
+        ) {
+            console.log("Veuillez entrer du texte")
+            return
+        }
+        if (
+            choiceChannel === null
+            || choiceChannel === undefined
+            || choiceChannel === ''
+            || choiceChannel === ' '
+        ) {
+            console.log("Veuillez entrer dans un salon avant de parler")
+            return
+        }
+
+        socket.emit('channelMessage', { channel: choiceChannel, message: rep })
+
+    }
+
+    socket.on('channMessage', (data) => {
+        console.log('\n')
+        console.log(chalk.blue(data.nick + ': ' + data.message))
+    })
 
     function privateMsg(choiceSplit) {
 
@@ -87,13 +122,13 @@ const start = async () => {
         }
     }
 
-    socket.on('message', (data) => {
-        insereMessage(data.nick, data.message)
-    })
+    // socket.on('message', (data) => {
+    //     insereMessage(data.nick, data.message)
+    // })
 
-    function insereMessage(nick, message) {
-        console.log(chalk.blue(nick + ': ' + message))
-    }
+    // function insereMessage(nick, message) {
+    //     console.log(chalk.blue(nick + ': ' + message))
+    // }
 
     function channelList(choiceSplit) {
         var str = choiceSplit[1]
@@ -149,12 +184,28 @@ const start = async () => {
     }
 
     function quitChannel(channel) {
-        channel = channel.toLowerCase()
-        if (channel == choiceChannel) {
+
+        if (
+            channel !== undefined
+            && channel !== ''
+            && channel !== null
+            && channel !== ' '
+        ) {
+            channel = channel.toLowerCase()
+        }
+        else {
+            console.log("Entrer le nom du channel")
+            return
+        }
+
+        if (
+            channel == choiceChannel
+        ) {
             socket.emit('quit_channel', channel, nick)
             console.log(chalk.red("Vous avez quitté le channel " + channel))
             choiceChannel = ''
-        } else {
+        }
+        else {
             console.log(chalk.red("Vous n'êtes pas dans ce channel"))
         }
     }
@@ -172,48 +223,43 @@ const start = async () => {
         ])
 
         var choiceSplit = choice.split(' ')
-        // console.log(choiceSplit)
 
         command = choiceSplit[0]
 
         switch (choiceSplit[0]) {
             case "/help":
-                console.log("Choisissez une option:");
-                console.log("/list [string]");
-                console.log("/join _channel_");
+                console.log("Choisissez une option:")
+                console.log("/list [string]")
+                console.log("/join _channel_")
                 console.log("/quit _channel_")
-                console.log("/users");
+                console.log("/users")
                 console.log("_message_")
                 console.log("/msg _nick_ _message_")
-                console.log("/exit");
-                break;
+                console.log("/exit")
+                break
             case "/list":
                 channelList(choiceSplit)
-                break;
+                break
             case "/join":
                 joinChannel(choiceSplit[1])
-                break;
+                break
             case "/quit":
                 quitChannel(choiceSplit[1])
-                break;
+                break
             case "/users":
                 usersChannel()
-                break;
+                break
             case "/msg":
                 privateMsg(choiceSplit)
-                break;
+                break
             case "/exit":
-                console.log("Vous quittez le tchat MellonMellon")
-                break;
+                console.log("Vous avez quittez le tchat MellonMellon")
+                break
             default:
-                console.log('Votre choix n\'est pas valide')
-                break;
+                channelMessage(choiceSplit)
+                break
         }
     } while (command !== '/exit')
-
-    // socket.on('connect', () => {
-    //     console.log(chalk.green('=== start chatting ==='))
-    // })
 
     repl.start({
         prompt: '',
