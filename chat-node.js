@@ -26,11 +26,6 @@ io.on('connection', function (socket) {
         }
     })
 
-    // socket.on('message', function (message) {
-    //     console.log(chalk.blue(socket.nick + ' : ' + message))
-    //     socket.broadcast.emit('message', { nick: socket.nick, message: message })
-    // })
-
     socket.on('private', function (data) {
 
         if (clients.includes(data.to)) {
@@ -72,10 +67,21 @@ io.on('connection', function (socket) {
     })
 
     socket.on('channel_users', function (channel) {
+        var clientsSocket = io.sockets.adapter.rooms[channel].sockets
         var clientsList = io.sockets.adapter.rooms[channel]
         var numClients = clientsList.length
-        console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + channel))
-        socket.emit('nb_clients', numClients)
+        if (numClients == 1) {
+            console.log(chalk.blue('Il y a ' + numClients + ' utilisateur connecté sur le channel ' + channel))
+        } else {
+            console.log(chalk.blue('Il y a ' + numClients + ' utilisateurs connectés sur le channel ' + channel))
+        }
+        socket.emit('list_clients', numClients)
+
+        for (var clientId in clientsSocket) {
+            var clientNick = io.sockets.connected[clientId].nick
+            console.log('- ' + clientNick)
+            socket.emit('nick_users', clientNick)
+        }
     })
 
     socket.on('quit_channel', function (channel, nick) {
