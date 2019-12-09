@@ -6,7 +6,6 @@ var clients = []
 const chalk = require('chalk')
 var clear = require('clear')
 var connectedUsers = {}
-var tabNick = []
 
 clear()
 
@@ -26,11 +25,6 @@ io.on('connection', function (socket) {
             connectedUsers[nick] = socket
         }
     })
-
-    // socket.on('message', function (message) {
-    //     console.log(chalk.blue(socket.nick + ' : ' + message))
-    //     socket.broadcast.emit('message', { nick: socket.nick, message: message })
-    // })
 
     socket.on('private', function (data) {
 
@@ -70,21 +64,24 @@ io.on('connection', function (socket) {
     socket.on('join_channel', function (choice, nick) {
         socket.join(choice)
         console.log(chalk.green(nick + ' a rejoint le channel ' + choice))
-        var sid = socket.id
-        console.log(sid)
     })
 
     socket.on('channel_users', function (channel) {
-        var clientsList = io.sockets.adapter.rooms[channel];
-        // console.log(clientsList)
-        clientsList.nick  = socket.nick
-        // console.log(clientsList.nick)
-        // tabNick.push(clientsList.nick)
-        // console.log(tabNick)
-        var numClients = clientsList.length;
-        console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + channel))
-        // tabNick.map((n) => console.log("- " + n))
+        var clientsSocket = io.sockets.adapter.rooms[channel].sockets
+        var clientsList = io.sockets.adapter.rooms[channel]
+        var numClients = clientsList.length
+        if (numClients == 1) {
+            console.log(chalk.blue('Il y a ' + numClients + ' utilisateur connecté sur le channel ' + channel))
+        } else {
+            console.log(chalk.blue('Il y a ' + numClients + ' utilisateurs connectés sur le channel ' + channel))
+        }
         socket.emit('list_clients', numClients)
+
+        for (var clientId in clientsSocket) {
+            var clientNick = io.sockets.connected[clientId].nick
+            console.log('- ' + clientNick)
+            socket.emit('nick_users', clientNick)
+        }
     })
 
     socket.on('quit_channel', function (channel, nick) {

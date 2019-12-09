@@ -4,7 +4,7 @@ const chalk = require('chalk')
 var inquirer = require('inquirer')
 var tabSalon = ['général', 'workplace', 'tech', 'news']
 var choiceChannel = ''
-var clear = require('clear');
+var clear = require('clear')
 
 const start = async () => {
 
@@ -22,7 +22,7 @@ const start = async () => {
                 if (value == `${resSplit[0]}`) {
                     valid = true
                 }
-                return valid || 'Veuillez réessayer';
+                return valid || 'Veuillez réessayer'
             }
         }
     ])
@@ -166,13 +166,12 @@ const start = async () => {
             socket.on('list_clients', (numClients) => {
                 console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + choiceChannel))
             })
+            socket.on('nick_users', (clientNick) => {
+                console.log('- ' + clientNick)
+            })
         } else {
             console.log(chalk.red("Vous n'êtes pas dans un channel"))
         }
-    }
-
-    function insereMessage(nick, message) {
-        console.log(chalk.blue(nick + ': ' + message))
     }
 
     function quitChannel(channel) {
