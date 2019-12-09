@@ -27,6 +27,15 @@ const start = async () => {
         }
     ])
 
+    if(
+        nick === ''
+        || nick === ' '
+        || nick === null
+        || nick === undefined
+    ) {
+        return start()
+    }
+
     console.log('\nVotre pseudo: ' + nick)
 
     socket.emit('nouveau_client', nick)
