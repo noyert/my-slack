@@ -144,9 +144,7 @@ const start = async () => {
             console.log("Veuillez entrer dans un salon avant de parler")
             return
         }
-
         socket.emit('channelMessage', { channel: choiceChannel, message: rep })
-
     }
 
     socket.on('channMessage', (data) => {
@@ -155,7 +153,6 @@ const start = async () => {
     })
 
     function privateMsg(choiceSplit) {
-
         var rep = ''
         for (var i = 2; i < choiceSplit.length; i++) {
             rep += choiceSplit[i] + ' '
@@ -231,11 +228,12 @@ const start = async () => {
         console.log(choiceChannel)
         if (choiceChannel !== '') {
             socket.emit('channel_users', choiceChannel)
-            socket.on('list_clients', (numClients) => {
+            socket.once('list_clients', (numClients) => {
                 console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + choiceChannel))
             })
-            socket.on('nick_users', (clientNick) => {
-                console.log('- ' + clientNick)
+            socket.once('nick_users', (tabUsers) => {
+                console.log(tabUsers)
+                tabUsers.map((u) => console.log('- ' + u))
             })
         } else {
             console.log(chalk.red("Vous n'êtes pas dans un channel"))
@@ -243,7 +241,6 @@ const start = async () => {
     }
 
     function quitChannel(channel) {
-
         if (
             channel !== undefined
             && channel !== ''
@@ -312,7 +309,9 @@ const start = async () => {
                 privateMsg(choiceSplit)
                 break
             case "/exit":
-                console.log("Vous avez quittez le tchat MellonMellon")
+                process.on('exit', function(code) {
+                    return console.log(`About to exit with code ${code}`);
+                });
                 break
             default:
                 channelMessage(choiceSplit)
