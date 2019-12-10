@@ -1,6 +1,6 @@
 const http = require('http').createServer()
 const io = require('socket.io')(http)
-const port = 3000
+var port = 3000
 var ent = require('ent')
 var clients = []
 const chalk = require('chalk')
@@ -18,7 +18,7 @@ io.on('connection', function (socket) {
             socket.emit('nouveau_client', nick)
         } else {
             socket.nick = nick
-            console.log(chalk.green(nick + ' a rejoint le tchat'))
+            console.log(chalk.green(nick + ' a rejoint le serveur'))
             clients.push(nick)
             console.log(clients)
             socket.broadcast.emit('nouveau_client', nick)
@@ -90,7 +90,7 @@ io.on('connection', function (socket) {
     })
 
     socket.on('disconnect', function () {
-        console.log(chalk.red(socket.nick + ' a quitter le serveur'))
+        console.log(chalk.red(socket.nick + ' a quitté le serveur'))
         socket.broadcast.emit('user_quit', socket.nick)
         clients.splice(clients.indexOf(socket.nick), 1)
         console.log(clients)
