@@ -1,7 +1,6 @@
 const http = require('http').createServer()
 const io = require('socket.io')(http)
-var port = 3000
-var ent = require('ent')
+const port = 4000
 var clients = []
 const chalk = require('chalk')
 var clear = require('clear')
@@ -50,7 +49,6 @@ io.on('connection', function (socket) {
     socket.on('channelMessage', function (data) {
 
         const channel = data.channel
-
         const message = data.message
 
         console.log(chalk.blue(socket.nick + ' a écrit: ' + message))

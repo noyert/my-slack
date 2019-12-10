@@ -144,9 +144,7 @@ const start = async () => {
             console.log("Veuillez entrer dans un salon avant de parler")
             return
         }
-
         socket.emit('channelMessage', { channel: choiceChannel, message: rep })
-
     }
 
     socket.on('channMessage', (data) => {
@@ -155,7 +153,6 @@ const start = async () => {
     })
 
     function privateMsg(choiceSplit) {
-
         var rep = ''
         for (var i = 2; i < choiceSplit.length; i++) {
             rep += choiceSplit[i] + ' '
@@ -243,7 +240,6 @@ const start = async () => {
     }
 
     function quitChannel(channel) {
-
         if (
             channel !== undefined
             && channel !== ''
