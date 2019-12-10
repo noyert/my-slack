@@ -191,7 +191,7 @@ const start = async () => {
         if (str !== undefined) {
             for (var i = 0; i < tabSalon.length; i++) {
                 if (tabSalon[i].includes(str)) {
-                    console.log(chalk.blue('\n' + tabSalon[i]))
+                    console.log(chalk.blue(tabSalon[i]))
                 }
             }
         } else {
@@ -200,7 +200,17 @@ const start = async () => {
     }
 
     function joinChannel(choice) {
-        choice = choice.toLowerCase()
+        if(
+            choice !== undefined 
+            && choice !== null 
+            && choice !== '' 
+            && choice !== ' '
+        ) {
+            choice = choice.toLowerCase()
+        } else {
+            console.log("Vous n'avez pas indiqué de salon")
+            return 
+        }
         if (choiceChannel == '') {
             if (tabSalon.includes(choice)) {
                 for (var i = 0; i < tabSalon.length; i++) {
@@ -232,7 +242,6 @@ const start = async () => {
                 console.log(chalk.blue('Il y a ' + numClients + ' utilisateur(s) connecté(s) sur le channel ' + choiceChannel))
             })
             socket.once('nick_users', (tabUsers) => {
-                console.log(tabUsers)
                 tabUsers.map((u) => console.log('- ' + u))
             })
         } else {
@@ -267,9 +276,9 @@ const start = async () => {
     }
 
     let command = ''
+    console.log("Liste des choix: /help")
 
     do {
-        console.log("Liste des choix: /help")
         var { choice } = await inquirer.prompt([
             {
                 type: 'input',
@@ -291,6 +300,7 @@ const start = async () => {
                 console.log("/users")
                 console.log("_message_")
                 console.log("/msg _nick_ _message_")
+                console.log("/send_file _nick_ _file_")
                 console.log("/exit")
                 break
             case "/list":
@@ -309,10 +319,12 @@ const start = async () => {
                 privateMsg(choiceSplit)
                 break
             case "/exit":
-                process.on('exit', function(code) {
-                    return console.log(`About to exit with code ${code}`);
-                });
+                console.log('Vous quittez le serveur')
+                process.exit()
                 break
+            // case "/send_file":
+            //     sendFile(choiceSplit)
+            //     break
             default:
                 channelMessage(choiceSplit)
                 break
