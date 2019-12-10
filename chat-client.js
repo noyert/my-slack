@@ -1,4 +1,3 @@
-var socket = require('socket.io-client')('http://localhost:3000')
 const repl = require('repl')
 const chalk = require('chalk')
 var inquirer = require('inquirer')
@@ -9,6 +8,66 @@ var clear = require('clear')
 const start = async () => {
 
     clear()
+
+    var { server } = await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'server',
+            message: '_Adresse_[:port] :',
+            validate: function (value) {
+                var valid = false
+                var resSplit = value.split(' ')
+                var splitPort = value.split(':')
+                if (
+                    resSplit[1] !== null
+                    && resSplit[1] !== undefined
+                    && resSplit[1] !== ''
+                    && resSplit[1] !== ' '
+                ) {
+                    valid = false
+                } else if (
+                    value == resSplit[0]
+                    && resSplit[0].substr(0, 7) === 'http://'
+                    && resSplit[0].substr(7) !== '' 
+                    && resSplit[0].substr(7) !== ' ' 
+                    && resSplit[0].substr(7) !== null 
+                    && resSplit[0].substr(7) !== undefined
+                ) {
+                    valid = true
+                    if (
+                        splitPort[2] === null 
+                        || splitPort[2] === undefined 
+                        || splitPort[2] === '' 
+                        || splitPort[2] === ' '
+                    ) {
+                        splitPort[2] = '3000'
+                        valid = true
+                    } 
+                    if (!Number.isInteger(splitPort[2] * 1)) {
+                        valid = false
+                    }
+                    console.log('\n')
+                    console.log(splitPort[2])
+                }
+                return valid || 'Veuillez réessayer'
+            }
+        }
+    ])
+
+    var splitServer = server.split(':')
+
+    if (splitServer[2] === null
+        || splitServer[2] === undefined
+        || splitServer[2] === ''
+        || splitServer[2] === ' '
+    ) {
+        server += ':3000'
+    }
+
+    var socket = require('socket.io-client')(server)
+
+    console.log('\nVotre serveur: ' + server)
+
     console.log('Bonjour, bienvenue sur le tchat MellonMellon\n')
 
     var { nick } = await inquirer.prompt([
@@ -27,7 +86,7 @@ const start = async () => {
         }
     ])
 
-    if(
+    if (
         nick === ''
         || nick === ' '
         || nick === null
