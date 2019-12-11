@@ -9,6 +9,8 @@ const chalk = require('chalk')
 var clear = require('clear')
 var connectedUsers = {}
 var tabUsers = []
+const ss = require('socket.io-stream')
+const fs = require('fs')
 
 clear()
 
@@ -118,6 +120,25 @@ io.on('connection', function (socket) {
     socket.on('quit_channel', function (channel, nick) {
         socket.leave(channel)
         console.log(chalk.red(nick + ' a quitté le channel ' + channel))
+    })
+
+    socket.on('sendmeafile', function (data) {
+
+        if (clients.includes(data.to)){
+            const to = data.to
+            console.log(to)
+            const filename = data.file
+            console.log(filename)
+            if (connectedUsers.hasOwnProperty(to)){
+                console.log("la")
+                var stream = ss.createStream(to)
+                stream.on('end', function () {
+                console.log('file sent')
+                })
+                ss(socket).emit('sending', stream)
+                fs.createReadStream(filename).pipe(stream)
+            }
+        }
     })
 
     socket.on('disconnect', function () {
