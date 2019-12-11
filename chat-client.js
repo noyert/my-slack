@@ -1,6 +1,9 @@
 const repl = require('repl')
 const chalk = require('chalk')
 var inquirer = require('inquirer')
+const ss = require('socket.io-stream');
+const fs = require('fs');
+
 var tabSalon = ['général', 'workplace', 'tech', 'news']
 var choiceChannel = ''
 var clear = require('clear')
@@ -28,21 +31,21 @@ const start = async () => {
                 } else if (
                     value == resSplit[0]
                     && resSplit[0].substr(0, 7) === 'http://'
-                    && resSplit[0].substr(7) !== '' 
-                    && resSplit[0].substr(7) !== ' ' 
-                    && resSplit[0].substr(7) !== null 
+                    && resSplit[0].substr(7) !== ''
+                    && resSplit[0].substr(7) !== ' '
+                    && resSplit[0].substr(7) !== null
                     && resSplit[0].substr(7) !== undefined
                 ) {
                     valid = true
                     if (
-                        splitPort[2] === null 
-                        || splitPort[2] === undefined 
-                        || splitPort[2] === '' 
+                        splitPort[2] === null
+                        || splitPort[2] === undefined
+                        || splitPort[2] === ''
                         || splitPort[2] === ' '
                     ) {
                         splitPort[2] = '3000'
                         valid = true
-                    } 
+                    }
                     if (!Number.isInteger(splitPort[2] * 1)) {
                         valid = false
                     }
@@ -200,16 +203,16 @@ const start = async () => {
     }
 
     function joinChannel(choice) {
-        if(
-            choice !== undefined 
-            && choice !== null 
-            && choice !== '' 
+        if (
+            choice !== undefined
+            && choice !== null
+            && choice !== ''
             && choice !== ' '
         ) {
             choice = choice.toLowerCase()
         } else {
             console.log("Vous n'avez pas indiqué de salon")
-            return 
+            return
         }
         if (choiceChannel == '') {
             if (tabSalon.includes(choice)) {
@@ -248,6 +251,74 @@ const start = async () => {
             console.log(chalk.red("Vous n'êtes pas dans un channel"))
         }
     }
+
+    function sendFile(choice) {
+        var rep = ''
+        for (var i = 2; i < choice.length; i++) {
+            rep += choice[i] + '_'
+        }
+        var repSplit = rep.split('')
+        repSplit = repSplit.slice(0, -1)
+        var filename = repSplit.join('')
+        var repPoint = filename.split('.')
+        if (repPoint.length > 1) {
+            var ext = repPoint[repPoint.length - 1]
+            console.log(ext)
+        } else {
+            console.log("Veuillez préciser l'extension")
+            return
+        }
+
+        if (
+            choice[1] !== undefined
+            && choice[1] !== null
+            && choice[2] !== undefined
+            && choice[2] !== ' '
+            && choice[2] !== ''
+            && choice[2] !== null
+        ) {
+            if (
+                ext !== null
+                && ext !== undefined
+                && ext !== ' '
+                && ext !== ''
+            ) {
+                socket.emit('sendmeafile', { to: choice[1], file: filename })
+            }
+        }
+        else if (
+            choice[1] === undefined
+            || choice[1] === null
+            || choice[1] === ''
+            || choice[1] === ' '
+        ) {
+            console.log(chalk.red("Veuillez entrer un pseudo"))
+        }
+        else if (
+            choice[2] === undefined
+            || choice[2] == ''
+            || choice[2] == ' '
+            || choice[2] === null
+        ) {
+            console.log(chalk.red("Veuillez séléctionner un fichier"))
+        }
+    }
+
+    socket.on('error_file', () => {
+        console.log("Le fichier n'existe pas")
+    })
+
+    socket.on('error_pseudo', () => {
+        console.log("Le pseudo entré n'existe pas")
+    })
+
+    ss(socket).on('sending', function (stream, filename) {
+
+        stream.pipe(fs.createWriteStream(filename))
+        stream.on('end', function () {
+            console.log('file received')
+        })
+    })
 
     function quitChannel(channel) {
         if (
@@ -301,6 +372,7 @@ const start = async () => {
                 console.log("_message_")
                 console.log("/msg _nick_ _message_")
                 console.log("/send_file _nick_ _file_")
+                console.log("/accept_file _nick_from_")
                 console.log("/exit")
                 break
             case "/list":
@@ -318,13 +390,16 @@ const start = async () => {
             case "/msg":
                 privateMsg(choiceSplit)
                 break
+            case "/send_file":
+                sendFile(choiceSplit)
+                break
+            case "/accept_file":
+                acceptFile(choiceSplit)
+                break
             case "/exit":
                 console.log('Vous quittez le serveur')
                 process.exit()
                 break
-            // case "/send_file":
-            //     sendFile(choiceSplit)
-            //     break
             default:
                 channelMessage(choiceSplit)
                 break
