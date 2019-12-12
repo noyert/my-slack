@@ -312,11 +312,24 @@ const start = async () => {
         console.log("Le pseudo entré n'existe pas")
     })
 
-    ss(socket).on('sending', function (stream, filename) {
-
+    ss(socket).on('sending', function (stream, filename, nick) {
+        while (fs.existsSync(filename)) {
+            var lastPoint = filename.lastIndexOf('.')
+            var fileTab = filename.split('')
+            var name = ''
+            var ext = ''
+            
+            for (var i = 0; i < lastPoint; i++) {
+                name += fileTab[i]
+            }
+            for (var j = lastPoint; j < fileTab.length; j++) {
+                ext += fileTab[j]
+            }
+            filename = `${name}-copie${ext}`
+        }
         stream.pipe(fs.createWriteStream(filename))
         stream.on('end', function () {
-            console.log('file received')
+            console.log(nick + ' vous a envoyé un fichier: ' + filename)
         })
     })
 

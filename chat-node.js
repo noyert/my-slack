@@ -59,17 +59,17 @@ io.on('connection', function (socket) {
                 var stream = ss.createStream()
                 fs.access(file, fs.F_OK, (err) => {
                     if (err) {
-                      console.error('Erreur: ' + err);
+                      console.error('Erreur: ' + err)
                       socket.emit('error_file')
                       return;
                     }
                     // file exists
                     stream.on('end', function () {
-                        console.log("Ce fichier n'existe pas")
-                    });
-                    ss(connectedUsers[to]).emit('sending', stream, file)
+                        console.log("Fichier envoyé")
+                    })
+                    ss(connectedUsers[to]).emit('sending', stream, file, socket.nick)
                     fs.createReadStream(file).pipe(stream)
-                  });
+                  })
             }
         } else {
             console.log(chalk.red("Le pseudo entré n'existe pas"))
