@@ -1,5 +1,8 @@
 const http = require('http').createServer()
 const io = require('socket.io')(http)
+const ss = require('socket.io-stream');
+const fs = require('fs');
+var path = require('path');
 const port = 3000
 var clients = []
 const chalk = require('chalk')
@@ -44,6 +47,33 @@ io.on('connection', function (socket) {
         }
         else {
             console.log(chalk.red("Le pseudo entré n'existe pas"))
+            socket.emit('error_pseudo')
+        }
+    })
+
+    socket.on('sendmeafile', function (data) {
+        if (clients.includes(data.to)) {
+            const to = data.to
+            const file = data.file
+            if (connectedUsers.hasOwnProperty(to)) {
+                var stream = ss.createStream()
+                fs.access(file, fs.F_OK, (err) => {
+                    if (err) {
+                      console.error('Erreur: ' + err)
+                      socket.emit('error_file')
+                      return;
+                    }
+                    // file exists
+                    stream.on('end', function () {
+                        console.log("Fichier envoyé")
+                    })
+                    ss(connectedUsers[to]).emit('sending', stream, file, socket.nick)
+                    fs.createReadStream(file).pipe(stream)
+                  })
+            }
+        } else {
+            console.log(chalk.red("Le pseudo entré n'existe pas"))
+            socket.emit('error_pseudo')
         }
     })
 
