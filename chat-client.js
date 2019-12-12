@@ -318,7 +318,7 @@ const start = async () => {
             var fileTab = filename.split('')
             var name = ''
             var ext = ''
-            
+
             for (var i = 0; i < lastPoint; i++) {
                 name += fileTab[i]
             }
@@ -329,7 +329,7 @@ const start = async () => {
         }
         stream.pipe(fs.createWriteStream(filename))
         stream.on('end', function () {
-            console.log(nick + ' vous a envoyé un fichier: ' + filename)
+            console.log(nick + ' vous a envoyé le fichier: ' + filename)
         })
     })
 
@@ -407,7 +407,7 @@ const start = async () => {
                 sendFile(choiceSplit)
                 break
             case "/accept_file":
-                acceptFile(choiceSplit)
+                acceptFile(choiceSplit[1])
                 break
             case "/exit":
                 console.log('Vous quittez le serveur')
