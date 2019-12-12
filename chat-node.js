@@ -123,20 +123,19 @@ io.on('connection', function (socket) {
     })
 
     socket.on('sendmeafile', function (data) {
-
-        if (clients.includes(data.to)){
-            const to = data.to
-            console.log(to)
-            const filename = data.file
-            console.log(filename)
-            if (connectedUsers.hasOwnProperty(to)){
-                console.log("la")
-                var stream = ss.createStream(to)
+        if (clients.includes(data.to)) {
+            const file = data.file
+            const to = data.to 
+            if (connectedUsers.hasOwnProperty(to)) {
+                var stream = ss.createStream()
                 stream.on('end', function () {
-                console.log('file sent')
+                    console.log('file sent')
                 })
-                ss(socket).emit('sending', stream)
-                fs.createReadStream(filename).pipe(stream)
+                ss(connectedUsers[to]).emit('sending', stream, file)
+                fs.createReadStream(file).pipe(stream)
+            }
+            else {
+                socket.emit('errorFile')
             }
         }
     })

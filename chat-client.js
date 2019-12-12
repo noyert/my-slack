@@ -304,7 +304,16 @@ const start = async () => {
         ) {
             console.log(chalk.red("Veuillez séléctionner un fichier"))
         }
-    }
+    } ss(socket).on('sending', function (stream, filename) {
+        stream.pipe(fs.createWriteStream(filename))
+        stream.on('end', function () {
+            console.log('file received')
+        })
+    })
+
+    socket.on('errorFile', function(){
+        console.log("Le fichier envoyé n'existe pas ")
+    })
 
     socket.on('error_file', () => {
         console.log("Le fichier n'existe pas")
