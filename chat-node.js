@@ -1,16 +1,14 @@
 const http = require('http').createServer()
 const io = require('socket.io')(http)
-const ss = require('socket.io-stream');
-const fs = require('fs');
-var path = require('path');
+const ss = require('socket.io-stream')
+const fs = require('fs')
+var path = require('path')
 const port = 3000
 var clients = []
 const chalk = require('chalk')
 var clear = require('clear')
 var connectedUsers = {}
 var tabUsers = []
-const ss = require('socket.io-stream')
-const fs = require('fs')
 
 clear()
 

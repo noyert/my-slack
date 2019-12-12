@@ -1,14 +1,11 @@
 const repl = require('repl')
 const chalk = require('chalk')
 var inquirer = require('inquirer')
-const ss = require('socket.io-stream');
-const fs = require('fs');
-
+const ss = require('socket.io-stream')
+const fs = require('fs')
 var tabSalon = ['général', 'workplace', 'tech', 'news']
 var choiceChannel = ''
 var clear = require('clear')
-const ss = require('socket.io-stream')
-const fs = require('fs')
 
 const start = async () => {
 
